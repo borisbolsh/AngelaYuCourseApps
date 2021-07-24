@@ -7,26 +7,53 @@
 //
 
 import UIKit
+import AVFoundation
+
 
 class ViewController: UIViewController {
+    @IBOutlet weak var progressBar: UIProgressView!
     
-    let eggTimer = ["Soft": 5, "Medium": 7, "Hard": 12]
+    @IBOutlet weak var titleLable: UILabel!
+    
+    let eggTimer = ["Soft": 3, "Medium": 7, "Hard": 12]
+
+    var timer = Timer()
+    var totaltime = 0
+    var secondesPassed = 0
+    
+    var player: AVAudioPlayer!
     
     @IBAction func hardnessSelected(_ sender: UIButton) {
         
+        timer.invalidate()
+        
         let hardness = sender.currentTitle!
     
-        switch hardness {
-        case "Soft":
-            print("\(eggTimer["Soft"] ?? 0)")
-        case "Medium":
-            print("\(eggTimer["Medium"] ?? 0)")
-        case "Hard":
-            print("\(eggTimer["Hard"] ?? 0)")
-        default:
-            print("Error chef")
-        }
+        totaltime = eggTimer[hardness]!
         
+        progressBar.progress = 0.0
+        secondesPassed = 0
+        titleLable.text = hardness
+        
+        timer = Timer.scheduledTimer(timeInterval: 1.0, target: self, selector: #selector(updateTimer), userInfo: nil, repeats: true)
+    }
+    
+    @objc func updateTimer() {
+        if secondesPassed < totaltime {
+            secondesPassed += 1
+            progressBar.progress = Float(secondesPassed) / Float(totaltime)
+        } else {
+            timer.invalidate()
+            titleLable.text = "DONE!"
+        
+            playSound(soundName: "alarm_sound")
+        }
+    }
+    
+    func playSound(soundName: String) {
+        let url = Bundle.main.url(forResource: soundName, withExtension: "mp3")
+        player = try! AVAudioPlayer(contentsOf: url!)
+        player.play()
         
     }
     
